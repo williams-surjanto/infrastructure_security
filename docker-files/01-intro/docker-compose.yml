@@ -1,0 +1,6 @@
+name: nginx-server
+services:
+  web-server-nginx:
+    build: ./
+    ports:
+      - "9080:9080"

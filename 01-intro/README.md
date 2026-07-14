@@ -1,8 +1,13 @@
 ## Introduction
 
-Note: this repository assume you used docker in KALI LINUX with intel architecture and also some familiarity with Linux. If you used M1/M2/M3 related chip, you have to find your way to adjust with the lab. But wait what's intel arch? M1? M2? M3? Kali Linux? if you cannot answer this basic question its better to choose more basic stuff. Don't be lazy! Internet have a lot of good reading that cover basic of cyber security that you can read for free, use your brain! if not you're getting replaced by AI in no time!
+Note: this repository assume you used docker in KALI LINUX with intel architecture and also some familiarity with Linux. If you used M1/M2/M3 related chip, you have to find your way to adjust with the lab. 
 
-Reference: DOCKER DEEP DIVE ZERO TO DOCKER IN A SINGLE BOOK, By Nigel Poulton
+But wait what's intel arch? M1? M2? M3? Kali Linux? if you cannot answer this basic question its better to choose more basic stuff. Don't be lazy! Internet have a lot of good reading that cover basic of cyber security that you can read for free, use your brain! if you cannot simply do this simple things you will certainly getting replaced by AI in no time!
+
+Reference: 
+- DOCKER DEEP DIVE ZERO TO DOCKER IN A SINGLE BOOK, By Nigel Poulton
+- Nginx Documentation
+- Google
 
 ### Why docker?
 
@@ -291,6 +296,310 @@ Are you sure you want to continue? [y/N] y
 ```
 This will remove all the mentioned items in your docker.
 
-### Exercise - 1 (20 points)
-Now do you know how to build a vulnerable FTP server, I want you to do hardening on the FTP server. Create a report on how to harden the configuration and make sure try to do research on serveral way to this task. Internet is your friend! 
+### Get your Hands More Dirty
+Lets get more serious in the implementation we will try to learn on how to automate build and deploy of the docker environment using dockerfile and docker-compose.yml respectively. Let's build Nginx with the following configurations:
+1. Remove version of Nginx
+2. Change Nginx port from 80 to 9080
+3. Setup HTTPS connection in Nginx 
 
+Quick explanation on dockerfile and docker-compose.yml:
+1. Use dockerfile to build your image
+2. Use docker-compose yml to deploy your image to container
+
+Let's start with the first two tasks which are removing version from Nginx and Nginx port from 80 to 9080. This two can be done in one go, since we only need to .conf file
+
+According to [Official Documentation](https://nginx.org/en/docs/beginners_guide.html) of nginx, the configuration file is named nginx.conf and placed in the directory /usr/local/nginx/conf, /etc/nginx, or /usr/local/etc/nginx. In my case when you run Nginx docker its located at /etc/nginx
+
+```
+root@e2cc91c6cc6b:/etc/nginx# ls -lah
+total 44K
+drwxr-xr-x 1 root root 4.0K Jul 13 15:36 .
+drwxr-xr-x 1 root root 4.0K Jul 13 15:17 ..
+drwxr-xr-x 1 root root 4.0K Jul 13 15:42 conf.d
+-rw-r--r-- 1 root root 1007 Jun 17 15:15 fastcgi_params
+-rw-r--r-- 1 root root 5.3K Jun 17 15:15 mime.types
+lrwxrwxrwx 1 root root   22 Jun 17 15:38 modules -> /usr/lib/nginx/modules
+-rw-r--r-- 1 root root  644 Jun 17 15:38 nginx.conf
+-rw-r--r-- 1 root root  636 Jun 17 15:15 scgi_params
+-rw-r--r-- 1 root root  664 Jun 17 15:15 uwsgi_params
+```
+Take a quick look at the content of nginx.conf file:
+
+```
+
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log notice;
+pid        /run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+```
+For now it only host 1 http site, in the future we can host many more http site by just adding "server" block in http but as for now we don't need it. Looking at the end of the file the nginx.conf also include configuration on conf.d/ which have only:
+
+```
+root@e2cc91c6cc6b:/etc/nginx/conf.d# ls -lah
+total 16K
+drwxr-xr-x 1 root root 4.0K Jul 13 15:42 .
+drwxr-xr-x 1 root root 4.0K Jul 13 15:36 ..
+-rw-r--r-- 1 root root 1.1K Jun 17 15:38 default.conf
+```
+Take a quick look again on default.conf
+
+```
+server {
+    listen       80;
+    server_name  localhost;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    #location ~ \.php$ {
+    #    root           html;
+    #    fastcgi_pass   127.0.0.1:9000;
+    #    fastcgi_index  index.php;
+    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+    #    include        fastcgi_params;
+    #}
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny  all;
+    #}
+}
+```
+Sweet we found port configuration, we will replace it with number 9080 in our dockerfile. What about masking Nginx version? quick google search and reading documentation reveal that all we need to do is just add server_tokens into the http block.
+
+```
+Syntax: 	server_tokens on | off | build | string;
+Default: 	
+
+server_tokens on;
+
+Context: 	http, server, location
+
+Enables or disables emitting nginx version on error pages and in the “Server” response header field.
+
+The build parameter (1.11.10) enables emitting a build name along with nginx version.
+
+Additionally, as part of our commercial subscription, starting from version 1.9.13 the signature on error pages and the “Server” response header field value can be set explicitly using the string with variables. An empty string disables the emission of the “Server” field. 
+```
+
+by doing this two tasks manually and restart nginx. when we doing nmap the service response and port is changed
+
+```
+nmap 172.17.0.2 -p 9080 -sV
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-07-14 18:43 +0700
+Nmap scan report for 172.17.0.2 (172.17.0.2)
+Host is up (0.000031s latency).
+
+PORT     STATE SERVICE VERSION
+9080/tcp open  http    nginx
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 6.24 seconds
+```
+
+Now, that we got all of required logic and files, lets build dockerfile and docker-compose.yml:
+
+1. For dockerfile, you need to make sure you have the hardened default.conf and nginx.conf in one directory with dockerfile. You can check docker-files/01-intro folder to be used for references.
+
+```
+FROM nginx:stable-trixie-perl
+
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
+```
+
+We will filled our dockerfile with this command pretty simple tho, since we only need to copy the two files. No need for running apt-update because it will just bloated the image. Furthermore, we also not need to run CMD command in dockerfile since if you look at the [Image Layer](https://hub.docker.com/layers/library/nginx/stable-trixie-perl/images/sha256-344b23332cf3fbbaec57ffb2d648eca36cbb1ac200ab0230cb8f5f43f2af4392) the last command is 
+
+```
+CMD ["nginx" "-g" "daemon off;"]
+```
+
+this means it will run nginx web server automatically
+
+Finally create the docker-compose.yml with the following specification
+
+```
+name: nginx-server
+services:
+  web-server-nginx:
+    build: ./
+    ports:
+      - "9080:9080"
+```
+this docker-compose file will tell docker to build based on the current dockerfile and we want to expose the port 9080 to outsider. Build and run the docker using this two command
+
+```
+~# sudo docker compose build
+~# sudo docker compose up
+```
+
+for compose build command you only need to run it once. If you successfully run it will host the dockerfile, like this:
+
+```
+~# sudo docker compose build
+[+] Building 3.1s (10/10) FINISHED                                                                                                                                                                                                    
+ => [internal] load local bake definitions                                                                                                                                                                                       0.0s
+ => => reading from stdin 642B                                                                                                                                                                                                   0.0s
+ => [internal] load build definition from Dockerfile                                                                                                                                                                             0.1s
+ => => transferring dockerfile: 154B                                                                                                                                                                                             0.0s
+ => [internal] load metadata for docker.io/library/nginx:stable-trixie-perl                                                                                                                                                      0.1s
+ => [internal] load .dockerignore                                                                                                                                                                                                0.1s
+ => => transferring context: 2B                                                                                                                                                                                                  0.0s
+ => [1/3] FROM docker.io/library/nginx:stable-trixie-perl@sha256:ba77770cb5d1868226a6a67e5b3c4d5bbc1e6116e2c71e51075863bbaf13e828                                                                                                0.7s
+ => => resolve docker.io/library/nginx:stable-trixie-perl@sha256:ba77770cb5d1868226a6a67e5b3c4d5bbc1e6116e2c71e51075863bbaf13e828                                                                                                0.1s
+ => [internal] load build context                                                                                                                                                                                                0.1s
+ => => transferring context: 1.82kB                                                                                                                                                                                              0.0s
+ => [2/3] COPY nginx.conf /etc/nginx/nginx.conf                                                                                                                                                                                  0.1s
+ => [3/3] COPY default.conf /etc/nginx/conf.d/default.conf                                                                                                                                                                       0.1s
+ => exporting to image                                                                                                                                                                                                           1.0s
+ => => exporting layers                                                                                                                                                                                                          0.4s
+ => => exporting manifest sha256:763f299990b150eb980cf1a94a73f129616adb2330162005b1ea3f68545a1083                                                                                                                                0.1s
+ => => exporting config sha256:dba753af989df45c92137300bc1bd46c57c535ce04d7388f65143f926d7f1770                                                                                                                                  0.0s
+ => => exporting attestation manifest sha256:6032a7a5edc5b346dad8f88a792294d9d9b56671885196cb4340cdff050a760b                                                                                                                    0.1s
+ => => exporting manifest list sha256:a4a5ca8e6bb175adca95542fb68ed1dd41218aa7bcbebe4b28056bb01ca4a2c2                                                                                                                           0.1s
+ => => naming to docker.io/library/nginx-server-web-server-nginx:latest                                                                                                                                                          0.0s
+ => => unpacking to docker.io/library/nginx-server-web-server-nginx:latest                                                                                                                                                       0.1s
+ => resolving provenance for metadata file                                                                                                                                                                                       0.0s
+[+] build 1/1
+ ✔ Image nginx-server-web-server-nginx Built                            
+```
+
+```
+sudo docker compose up
+[+] up 2/2
+ ✔ Network nginx-server_default              Created                                                                                                                                                                              0.1s
+ ✔ Container nginx-server-web-server-nginx-1 Created                                                                                                                                                                              0.2s
+Attaching to web-server-nginx-1
+web-server-nginx-1  | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+web-server-nginx-1  | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+web-server-nginx-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+web-server-nginx-1  | 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+web-server-nginx-1  | 10-listen-on-ipv6-by-default.sh: info: /etc/nginx/conf.d/default.conf differs from the packaged version
+web-server-nginx-1  | /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+web-server-nginx-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+web-server-nginx-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+web-server-nginx-1  | /docker-entrypoint.sh: Configuration complete; ready for start up
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: using the "epoll" event method
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: nginx/1.30.3
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: built by gcc 14.2.0 (Debian 14.2.0-19) 
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: OS: Linux 7.0.0-27-generic
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1024:524288
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker processes
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 28
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 29
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 30
+web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 31
+
+```
+
+if you want to make run in background just add -d parameter.
+
+Finally let's enable SSL into nginx!
+
+First step is to create public key and private key using openssl like this:
+
+```
+~# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./nginx-selfsigned.key -out ./nginx-selfsigned.crt
+....+...............+...........+.+.....+....+......+.....+...+.+..............+...+...+.+...+...+...............+++++++++++++++++++++++++++++++++++++++*.+..+.......+........+......+....+......+..+...+.+...+..+...+.+.....+......+......+....+......+..+............+.+...+..+.......+..+..........+.....+.........+....+...+........+....+++++++++++++++++++++++++++++++++++++++*......+......................+..................+..+.+............+..+.............+.....+...+......+....+..+.......+.....+.+......+........+......+.+........+.+..+....+.....+.+........+.+...............+......+............+...............+.....+............+...+.+............+..+...+..................+.+...........+.......+.....+......+.......+...+...........+...+.+.........+..+....+..+..........+...+..+.............+.....+.+.....+.+...+..+.........+.............+..+.+.....+............+...+.........+.........+....+...+.................+......+......+.+..+...+...+............+.............+.....+....+...+..+..................+....+.........+......+...+...........+.+........+.+...........+......+...+......+.+............+........+.......+..+....+......+...+........+...+....+...+..+...............+.+.....................+.....+.............++++++
+..........+........+...+...+......+.+.................+++++++++++++++++++++++++++++++++++++++*......+.....+......+....+...+............+.....+....+..+..........+..............+.........+.......+..+......+.+...+...........+.+.....+.+...+..+.......+.....+...+...+............+...+......+.+...+......+.....+...+......+....+++++++++++++++++++++++++++++++++++++++*......+.......+...............+..+.+..+.+...............+.........+...+..++++++
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:ID
+State or Province Name (full name) [Some-State]:Jakarta
+Locality Name (eg, city) []:Jakarta
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:blackhat
+Organizational Unit Name (eg, section) []:IT
+Common Name (e.g. server FQDN or YOUR name) []:blackhat
+Email Address []:IT@blackhat.com
+root@e2cc91c6cc6b:/etc/nginx/ssl# ls
+nginx-selfsigned.crt  nginx-selfsigned.key
+```
+
+Next is to add some changes into default.conf so its load the ssl certs, like this:
+```
+server {
+    listen       9080 ssl;
+    server_name  blackhat.com;
+    ssl_certificate /etc/nginx/ssl/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/nginx-selfsigned.key;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+    ....
+}
+```
+
+Its pretty easy changes, all you have to do is just add ssl after the port and add ssl_certificate and ssl_certificate_key to refer it to the ssl certs, you can use any location but make sure its consistent. Finally, the last touch is to adjust the dockerfile.
+
+```
+FROM nginx:stable-trixie-perl
+
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
+COPY nginx-selfsigned.crt /etc/nginx/ssl/nginx-selfsigned.crt
+COPY nginx-selfsigned.key /etc/nginx/ssl/nginx-selfsigned.key
+
+RUN chmod 644 /etc/nginx/ssl/nginx-selfsigned.crt && chmod 600 /etc/nginx/ssl/nginx-selfsigned.key
+```
+
+we copy the public key and private key to the docker and change the mod of the file to be more restrictive. Remove the old docker image from previous activity and run the sudo docker compose build and up again. You now have setup a https nginx with basic hardening configuration.
