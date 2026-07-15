@@ -17,12 +17,6 @@ I will try to cover every possible material relating to this concept but now my 
 
 [X] Make lab writeup for CVE-2021-43798 - exploitation
 
-[] Make lab writeup for hardening phpmyadmin misconfiguration - vulnerability analysis
+[X] Extend intro material to dockerfile and docker-compose.yml
 
-[] Make lab writeup for hardening EMQX default password - vulnerability analysis
-
-[] Make lab writeup for DNS Zone transfer - vulnerability analysis
-
-[] Make lab writeup for metasploit CVE 2025-32433 and CVE 2021-32682
-
-[] Make lab to write Nuclei template
+[] Create intro material for docker networking
