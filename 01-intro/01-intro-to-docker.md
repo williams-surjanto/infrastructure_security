@@ -1,33 +1,38 @@
-## Introduction
+# Introduction to Docker
 
-Note: this repository assume you used docker in KALI LINUX with intel architecture and also some familiarity with Linux. If you used M1/M2/M3 related chip, you have to find your way to adjust with the lab. 
+> **Note:** This repository assumes you are using Docker on Kali Linux or a Linux machine with an Intel architecture, along with some familiarity with Linux. If you use an M1/M2/M3 chip, you'll have to find your own way to adjust the labs.
 
-But wait what's intel arch? M1? M2? M3? Kali Linux? if you cannot answer this basic question its better to choose more basic stuff. Don't be lazy! Internet have a lot of good reading that cover basic of cyber security that you can read for free, use your brain! if you cannot simply do this simple things you will certainly getting replaced by AI in no time!
+But wait — what's Intel arch? M1? M2? M3? Kali Linux? If you can't answer these basic questions, it's better to start with more fundamental material first. Don't be lazy! The internet has plenty of good, free reading that covers the basics of cyber security — use your brain! If you can't handle these simple things, you'll certainly be replaced by AI in no time.
 
-Reference: 
-- DOCKER DEEP DIVE ZERO TO DOCKER IN A SINGLE BOOK, By Nigel Poulton
+**References:**
+
+- *Docker Deep Dive: Zero to Docker in a Single Book*, by Nigel Poulton
 - Nginx Documentation
 - Google
 
-### Why docker?
+## Why Docker?
 
-| Point| Detail	   					     		 |
-|-----:|-----------------------------------------------------------------|
-|     1| In the past one app equal to one server	     		 |
-|     2| New business => New app => New server => Cost go up 		 |
-|     3| Then come VMWare, to solve this problem	     		 |
-|     4| But it introduce new problem - Its slow to boot and not portable|
+| Point | Detail |
+|:-----:|--------|
+| 1 | In the past, one app equaled one server. |
+| 2 | New business ⇒ new app ⇒ new server ⇒ cost goes up. |
+| 3 | Then came VMware, to solve this problem. |
+| 4 | But it introduced a new problem — it's slow to boot and not portable. |
 
-Then container came along! it has the same approach as VM but it does not require a full-blown OS, thus, its portable and easy to setup.
+Then containers came along! They take the same approach as VMs, but they don't require a full-blown OS — so they're portable and easy to set up.
 
-### Installing Docker
-To install docker, open terminal and use the following command:
-```
+## Installing Docker
+
+To install Docker, open a terminal and use the following commands:
+
+```bash
 ~# sudo apt install docker.io
 ~# sudo apt install docker-compose
 ```
-Once the installation complete, you can check if the docker is installed correctly:
-```
+
+Once the installation is complete, you can check that Docker was installed correctly:
+
+```bash
 ~# docker version
 Client:
  Version:           26.1.5+dfsg1
@@ -37,22 +42,24 @@ Client:
  Built:             Sat May 24 17:38:32 2025
  OS/Arch:           linux/amd64
  Context:           default
-
 ```
-Please be aware that result might be different but thats not gonna be a problem for now.
- 
-### Get your Hands Dirty
+
+Be aware that your result might be different, but that's not going to be a problem for now.
+
+## Get Your Hands Dirty
 
 Run the following command in the terminal:
-```
+
+```bash
 ~# sudo docker images           
 REPOSITORY                 TAG       IMAGE ID       CREATED       SIZE
 ```
-To used docker you need to used sudo! As you can see this will show docker images as the name implies. Images is basically contain all the necessary component including dependencies to run application.
 
-Okay, now let's try to download our first image!
-Run the following command in the terminal:
-```
+To use Docker, you need to use `sudo`! As the name implies, this shows your Docker images. An **image** basically contains all the necessary components, including dependencies, to run an application.
+
+Okay, now let's try to download our first image. Run the following command in the terminal:
+
+```bash
 ~# sudo docker pull ubuntu:plucky
 plucky: Pulling from library/ubuntu
 60fb2420030a: Pull complete 
@@ -60,49 +67,65 @@ Digest: sha256:95a416ad2446813278ec13b7efdeb551190c94e12028707dd7525632d3cec0d1
 Status: Downloaded newer image for ubuntu:plucky
 docker.io/library/ubuntu:plucky
 ```
-Once download is done, you can check by entering this command again:
-```
+
+Once the download is done, you can check again by entering this command:
+
+```bash
 ~# sudo docker images                           
 REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 ubuntu       plucky    92598a7a70c7   3 weeks ago   77MB
 ```
-Let's create the container(Think about image is the raw material and container is the product of that raw material).
-Now that the container is ready, its time to start it:
-```
+
+Let's create the container (think of the image as the raw material and the container as the product made from that raw material). Now that the container is ready, it's time to start it:
+
+```bash
 ~# sudo docker run -it ubuntu:plucky /bin/bash   
 root@7b6c74e6fd4d:/# 
 ```
-The container in a very minimalistic environment, we need to do some installation! run the following command in the docker:
-```
+
+The container is a very minimalistic environment, so we need to do some installation. Run the following commands inside the container:
+
+```bash
 root@7b6c74e6fd4d:/# apt update
 root@7b6c74e6fd4d:/# apt install net-tools
 root@7b6c74e6fd4d:/# apt install nano
 ```
-Once installation complete, we can use the standard linux network cli, like:
-```
+
+Once the installation is complete, we can use the standard Linux network CLI tools, like:
+
+```bash
 root@7b6c74e6fd4d:/# netstat -aptn
 root@7b6c74e6fd4d:/# ifconfig
 ```
-So on and so forth. Now lets try to install apache(web server) into our docker for testing, put the following command:
-```
+
+And so on and so forth. Now let's try to install Apache (a web server) into our container for testing. Enter the following command:
+
+```bash
 root@7b6c74e6fd4d:/# apt install apache2 
 ```
-Once its done, lets start the service:
-```
+
+Once it's done, let's start the service:
+
+```bash
 root@7b6c74e6fd4d:/# service apache2 start
 ```
-We can check if the HTTP port open using the command:
-```
+
+We can check whether the HTTP port is open using the command:
+
+```bash
 root@3f55c4081b93:/# netstat -aptn
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      3573/apache2      
 ```
-Let's visit the web server via browser from kali linux. As you can see it will run!
-Note: you can only visit the ubuntu instance because you are the host, if you want other user to visit the same apache page. You have to run the docker using -p parameter so it mapped to host port.
 
-Now that we have a very minimalistic ubuntu server to play with, lets do network scanning and enumeration using nmap from kali linux.
-```
+Let's visit the web server via a browser from Kali Linux. As you can see, it works!
+
+> **Note:** You can only visit the Ubuntu instance because you are the host. If you want another user to visit the same Apache page, you have to run the container with the `-p` parameter so it maps to a host port.
+
+Now that we have a very minimalistic Ubuntu server to play with, let's do some network scanning and enumeration using `nmap` from Kali Linux.
+
+```bash
 ~# nmap 172.17.0.2             
 Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-07 11:03 EDT
 Nmap scan report for 172.17.0.2 (172.17.0.2)
@@ -136,32 +159,40 @@ HOP RTT     ADDRESS
 
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 8.43 seconds
-
-
 ```
-As you can see using nmap we can get information regarding the open port and the software running in the port. 
-Let's right now switch side as the operation team, can we make this little harder for attacker? for example can we hide banner, so attacker don't know what software running in the http port.
-Let's go to the apache2.conf file to put some hardening, like this:
-```
+
+As you can see, with `nmap` we can get information about the open ports and the software running on them.
+
+Let's now switch sides and act as the operations team. Can we make this a little harder for an attacker? For example, can we hide the banner so the attacker doesn't know what software is running on the HTTP port? Let's go to the `apache2.conf` file to apply some hardening:
+
+```bash
 root@3f55c4081b93:~# cd /etc/apache2
 root@3f55c4081b93:/etc/apache2# ls
 apache2.conf  conf-available  conf-enabled  envvars  magic  mods-available  mods-enabled  ports.conf  sites-available  sites-enabled
 ```
-Open the file using nano, like this:
-```
+
+Open the file using nano:
+
+```bash
 root@3f55c4081b93:/etc/apache2# nano apache2.conf
 ```
-Go to the end of file using your arrow key and add the following configuration:
-```
+
+Go to the end of the file using your arrow keys and add the following configuration:
+
+```apache
 ServerTokens Prod
 ServerSignature Off
 ```
-Don't forget to save it with ctrl+o and ctrl+x to exit the nano. Finally restart apache server like this:
-```
+
+Don't forget to save it with `Ctrl+O`, then `Ctrl+X` to exit nano. Finally, restart the Apache server:
+
+```bash
 root@3f55c4081b93:/etc/apache2# service apache2 restart
 ```
-Once it got up again , try to scan it using nmap:
-```
+
+Once it's back up, try scanning it again with nmap:
+
+```bash
 ~# nmap -A 172.17.0.2 -p 80
 Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-07 11:13 EDT
 Nmap scan report for 172.17.0.2 (172.17.0.2)
@@ -185,35 +216,45 @@ HOP RTT     ADDRESS
 
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 8.01 seconds
+```
 
-```
-As you can see the server version is gone. Now let's move on into something more interesting. Lets setup a vulnerable FTP server, in this case we will be using vsftpd.
-```
+As you can see, the server version is gone. Now let's move on to something more interesting. Let's set up a vulnerable FTP server — in this case we'll use vsftpd.
+
+```bash
 ~# apt install vsftpd
 ```
-If the installation asking you about country and location just pick any area you like!
 
-Next is to create ftp user for you to access:
-```
+If the installation asks you about country and location, just pick any area you like.
+
+Next, create an FTP user for you to access:
+
+```bash
 root@3f55c4081b93:/etc/apache2/conf-available# useradd -m ftpuser
 root@3f55c4081b93:/etc/apache2/conf-available# passwd ftpuser
 ```
-Use any password that you like. Next is to create the following folder:
 
-```
+Use any password you like. Next, create the following folder:
+
+```bash
 root@3f55c4081b93:~# mkdir -p /var/ftp/share
 ```
-Finally open the vsftpd.conf using nano:
-```
+
+Finally, open `vsftpd.conf` using nano:
+
+```bash
 root@3f55c4081b93:~# nano /etc/vsftpd.conf
 ```
+
 Add the following changes:
-```
+
+```ini
 anonymous_enable=YES
 local_enable=YES
 ```
-Finally you can start the vsftpd:
-```
+
+Finally, you can start vsftpd:
+
+```bash
 root@3f55c4081b93:~# service vsftpd start
  * Starting FTP server vsftpd                                                                                                          [ OK ] 
 root@3f55c4081b93:~# netstat -aptn
@@ -223,8 +264,9 @@ tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      
 tcp6       0      0 :::21                   :::*                    LISTEN      5091/vsftpd         
 ```
 
-Now you can nmap the port and see what the nmap pick up:
-```
+Now you can nmap the port and see what nmap picks up:
+
+```bash
 ~# nmap 172.17.0.2 -p 21 -A    
 Starting Nmap 7.95 ( https://nmap.org ) at 2025-08-07 11:49 EDT
 Nmap scan report for 172.17.0.2 (172.17.0.2)
@@ -262,28 +304,36 @@ HOP RTT     ADDRESS
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 4.46 seconds
 ```
-### Notes
-Several docker command that can be useful:
 
-1. For example, if you want to restart your ubuntu docker that has been exited, like this:
-```
+## Notes
+
+Several Docker commands that can be useful:
+
+**1. Restarting an exited container.** For example, if you want to restart your Ubuntu container that has been exited:
+
+```bash
 ~# sudo docker container ps -a  
 CONTAINER ID   IMAGE                  COMMAND       CREATED             STATUS                          PORTS                                       NAMES
 428fce953623   ubuntu:plucky          "/bin/bash"   About an hour ago   Exited (0) About a minute ago                                               eloquent_lamport
+```
 
-```
-You can do the following command, first is to start the docker again by providing the container id as in this case it would be 428fce953623:
-```
+First, start the container again by providing the container ID — in this case, `428fce953623`:
+
+```bash
 ~# sudo docker container start 428fce953623
 ```
-Once it starts you can attach to the docker again, using the following command:
-```
+
+Once it starts, you can attach to it again with the following command:
+
+```bash
 ~# sudo docker attach 428fce953623 
 root@428fce953623:/# ls
 bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
 ```
-2. After this you will doing a lot of setup in docker and it may cause your memory storage, thus, we recommend you to periodically prune the docker. This means to remove all of the cache, docker image and container.
-```
+
+**2. Pruning Docker.** After this you'll be doing a lot of setup in Docker, and it may fill up your storage. We recommend periodically pruning Docker — this removes all cache, dangling images, and stopped containers.
+
+```bash
 ~# sudo docker system prune
 WARNING! This will remove:
   - all stopped containers
@@ -292,25 +342,28 @@ WARNING! This will remove:
   - unused build cache
 
 Are you sure you want to continue? [y/N] y
-
 ```
-This will remove all the mentioned items in your docker.
 
-### Get your Hands More Dirty
-Lets get more serious in the implementation we will try to learn on how to automate build and deploy of the docker environment using dockerfile and docker-compose.yml respectively. Let's build Nginx with the following configurations:
-1. Remove version of Nginx
-2. Change Nginx port from 80 to 9080
-3. Setup HTTPS connection in Nginx 
+This will remove all of the mentioned items from your Docker environment.
 
-Quick explanation on dockerfile and docker-compose.yml:
-1. Use dockerfile to build your image
-2. Use docker-compose yml to deploy your image to container
+## Get Your Hands More Dirty
 
-Let's start with the first two tasks which are removing version from Nginx and Nginx port from 80 to 9080. This two can be done in one go, since we only need to .conf file
+Let's get more serious about the implementation. We'll learn how to automate building and deploying a Docker environment using a Dockerfile and docker-compose.yml, respectively. Let's build Nginx with the following configurations:
 
-According to [Official Documentation](https://nginx.org/en/docs/beginners_guide.html) of nginx, the configuration file is named nginx.conf and placed in the directory /usr/local/nginx/conf, /etc/nginx, or /usr/local/etc/nginx. In my case when you run Nginx docker its located at /etc/nginx
+1. Remove the Nginx version from the banner.
+2. Change the Nginx port from 80 to 9080.
+3. Set up an HTTPS connection in Nginx.
 
-```
+Quick explanation of the Dockerfile and docker-compose.yml:
+
+1. Use the **Dockerfile** to build your image.
+2. Use **docker-compose.yml** to deploy your image to a container.
+
+Let's start with the first two tasks: removing the version from Nginx and changing the Nginx port from 80 to 9080. These two can be done in one go, since we only need the `.conf` file.
+
+According to the [official Nginx documentation](https://nginx.org/en/docs/beginners_guide.html), the configuration file is named `nginx.conf` and placed in the directory `/usr/local/nginx/conf`, `/etc/nginx`, or `/usr/local/etc/nginx`. In my case, when you run the Nginx container it's located at `/etc/nginx`:
+
+```bash
 root@e2cc91c6cc6b:/etc/nginx# ls -lah
 total 44K
 drwxr-xr-x 1 root root 4.0K Jul 13 15:36 .
@@ -323,10 +376,10 @@ lrwxrwxrwx 1 root root   22 Jun 17 15:38 modules -> /usr/lib/nginx/modules
 -rw-r--r-- 1 root root  636 Jun 17 15:15 scgi_params
 -rw-r--r-- 1 root root  664 Jun 17 15:15 uwsgi_params
 ```
-Take a quick look at the content of nginx.conf file:
 
-```
+Take a quick look at the contents of the `nginx.conf` file:
 
+```nginx
 user  nginx;
 worker_processes  auto;
 
@@ -359,18 +412,20 @@ http {
     include /etc/nginx/conf.d/*.conf;
 }
 ```
-For now it only host 1 http site, in the future we can host many more http site by just adding "server" block in http but as for now we don't need it. Looking at the end of the file the nginx.conf also include configuration on conf.d/ which have only:
 
-```
+For now it only hosts one HTTP site. In the future we can host many more HTTP sites by adding more `server` blocks inside `http`, but for now we don't need to. Looking at the end of the file, `nginx.conf` also includes the configuration in `conf.d/`, which contains only:
+
+```bash
 root@e2cc91c6cc6b:/etc/nginx/conf.d# ls -lah
 total 16K
 drwxr-xr-x 1 root root 4.0K Jul 13 15:42 .
 drwxr-xr-x 1 root root 4.0K Jul 13 15:36 ..
 -rw-r--r-- 1 root root 1.1K Jun 17 15:38 default.conf
 ```
-Take a quick look again on default.conf
 
-```
+Take a quick look at `default.conf`:
+
+```nginx
 server {
     listen       80;
     server_name  localhost;
@@ -415,9 +470,10 @@ server {
     #}
 }
 ```
-Sweet we found port configuration, we will replace it with number 9080 in our dockerfile. What about masking Nginx version? quick google search and reading documentation reveal that all we need to do is just add server_tokens into the http block.
 
-```
+Sweet — we found the port configuration, which we'll replace with `9080` in our Dockerfile. What about masking the Nginx version? A quick Google search and some documentation reading reveal that all we need to do is add `server_tokens` to the `http` block:
+
+```text
 Syntax: 	server_tokens on | off | build | string;
 Default: 	
 
@@ -432,9 +488,9 @@ The build parameter (1.11.10) enables emitting a build name along with nginx ver
 Additionally, as part of our commercial subscription, starting from version 1.9.13 the signature on error pages and the “Server” response header field value can be set explicitly using the string with variables. An empty string disables the emission of the “Server” field. 
 ```
 
-by doing this two tasks manually and restart nginx. when we doing nmap the service response and port is changed
+By doing these two tasks manually and restarting Nginx, when we run nmap the service response and port have changed:
 
-```
+```bash
 nmap 172.17.0.2 -p 9080 -sV
 Starting Nmap 7.98 ( https://nmap.org ) at 2026-07-14 18:43 +0700
 Nmap scan report for 172.17.0.2 (172.17.0.2)
@@ -447,28 +503,28 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 6.24 seconds
 ```
 
-Now, that we got all of required logic and files, lets build dockerfile and docker-compose.yml:
+Now that we have all of the required logic and files, let's build the Dockerfile and docker-compose.yml.
 
-1. For dockerfile, you need to make sure you have the hardened default.conf and nginx.conf in one directory with dockerfile. You can check docker-files/01-intro folder to be used for references.
+**1. Dockerfile.** Make sure you have the hardened `default.conf` and `nginx.conf` in the same directory as the Dockerfile. You can check the `docker-files/01-intro` folder for reference.
 
-```
+```dockerfile
 FROM nginx:stable-trixie-perl
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY default.conf /etc/nginx/conf.d/default.conf
 ```
 
-We will filled our dockerfile with this command pretty simple tho, since we only need to copy the two files. No need for running apt-update because it will just bloated the image. Furthermore, we also not need to run CMD command in dockerfile since if you look at the [Image Layer](https://hub.docker.com/layers/library/nginx/stable-trixie-perl/images/sha256-344b23332cf3fbbaec57ffb2d648eca36cbb1ac200ab0230cb8f5f43f2af4392) the last command is 
+We fill our Dockerfile with this command — pretty simple, since we only need to copy the two files. There's no need to run `apt-update`, because it would just bloat the image. Furthermore, we also don't need to run a `CMD` command in the Dockerfile, because if you look at the [image layers](https://hub.docker.com/layers/library/nginx/stable-trixie-perl/images/sha256-344b23332cf3fbbaec57ffb2d648eca36cbb1ac200ab0230cb8f5f43f2af4392), the last command is:
 
-```
+```dockerfile
 CMD ["nginx" "-g" "daemon off;"]
 ```
 
-this means it will run nginx web server automatically
+This means it will run the Nginx web server automatically.
 
-Finally create the docker-compose.yml with the following specification
+Finally, create the docker-compose.yml with the following specification:
 
-```
+```yaml
 name: nginx-server
 services:
   web-server-nginx:
@@ -476,16 +532,17 @@ services:
     ports:
       - "9080:9080"
 ```
-this docker-compose file will tell docker to build based on the current dockerfile and we want to expose the port 9080 to outsider. Build and run the docker using this two command
 
-```
+This docker-compose file tells Docker to build based on the current Dockerfile, and we want to expose port 9080 to the outside. Build and run the container using these two commands:
+
+```bash
 ~# sudo docker compose build
 ~# sudo docker compose up
 ```
 
-for compose build command you only need to run it once. If you successfully run it will host the dockerfile, like this:
+For the `compose build` command, you only need to run it once. If it runs successfully, it will host the Dockerfile, like this:
 
-```
+```bash
 ~# sudo docker compose build
 [+] Building 3.1s (10/10) FINISHED                                                                                                                                                                                                    
  => [internal] load local bake definitions                                                                                                                                                                                       0.0s
@@ -514,7 +571,7 @@ for compose build command you only need to run it once. If you successfully run 
  ✔ Image nginx-server-web-server-nginx Built                            
 ```
 
-```
+```bash
 sudo docker compose up
 [+] up 2/2
  ✔ Network nginx-server_default              Created                                                                                                                                                                              0.1s
@@ -539,16 +596,15 @@ web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 28
 web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 29
 web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 30
 web-server-nginx-1  | 2026/07/14 12:20:35 [notice] 1#1: start worker process 31
-
 ```
 
-if you want to make run in background just add -d parameter.
+If you want to run it in the background, just add the `-d` parameter.
 
-Finally let's enable SSL into nginx!
+Finally, let's enable SSL in Nginx!
 
-First step is to create public key and private key using openssl like this:
+The first step is to create a public key and private key using OpenSSL:
 
-```
+```bash
 ~# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./nginx-selfsigned.key -out ./nginx-selfsigned.crt
 ....+...............+...........+.+.....+....+......+.....+...+.+..............+...+...+.+...+...+...............+++++++++++++++++++++++++++++++++++++++*.+..+.......+........+......+....+......+..+...+.+...+..+...+.+.....+......+......+....+......+..+............+.+...+..+.......+..+..........+.....+.........+....+...+........+....+++++++++++++++++++++++++++++++++++++++*......+......................+..................+..+.+............+..+.............+.....+...+......+....+..+.......+.....+.+......+........+......+.+........+.+..+....+.....+.+........+.+...............+......+............+...............+.....+............+...+.+............+..+...+..................+.+...........+.......+.....+......+.......+...+...........+...+.+.........+..+....+..+..........+...+..+.............+.....+.+.....+.+...+..+.........+.............+..+.+.....+............+...+.........+.........+....+...+.................+......+......+.+..+...+...+............+.............+.....+....+...+..+..................+....+.........+......+...+...........+.+........+.+...........+......+...+......+.+............+........+.......+..+....+......+...+........+...+....+...+..+...............+.+.....................+.....+.............++++++
 ..........+........+...+...+......+.+.................+++++++++++++++++++++++++++++++++++++++*......+.....+......+....+...+............+.....+....+..+..........+..............+.........+.......+..+......+.+...+...........+.+.....+.+...+..+.......+.....+...+...+............+...+......+.+...+......+.....+...+......+....+++++++++++++++++++++++++++++++++++++++*......+.......+...............+..+.+..+.+...............+.........+...+..++++++
@@ -571,8 +627,9 @@ root@e2cc91c6cc6b:/etc/nginx/ssl# ls
 nginx-selfsigned.crt  nginx-selfsigned.key
 ```
 
-Next is to add some changes into default.conf so its load the ssl certs, like this:
-```
+Next, add some changes to `default.conf` so it loads the SSL certs:
+
+```nginx
 server {
     listen       9080 ssl;
     server_name  blackhat.com;
@@ -589,9 +646,9 @@ server {
 }
 ```
 
-Its pretty easy changes, all you have to do is just add ssl after the port and add ssl_certificate and ssl_certificate_key to refer it to the ssl certs, you can use any location but make sure its consistent. Finally, the last touch is to adjust the dockerfile.
+These are pretty easy changes — all you have to do is add `ssl` after the port and add `ssl_certificate` and `ssl_certificate_key` to point to the SSL certs. You can use any location, but make sure it's consistent. Finally, the last touch is to adjust the Dockerfile:
 
-```
+```dockerfile
 FROM nginx:stable-trixie-perl
 
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -602,4 +659,4 @@ COPY nginx-selfsigned.key /etc/nginx/ssl/nginx-selfsigned.key
 RUN chmod 644 /etc/nginx/ssl/nginx-selfsigned.crt && chmod 600 /etc/nginx/ssl/nginx-selfsigned.key
 ```
 
-we copy the public key and private key to the docker and change the mod of the file to be more restrictive. Remove the old docker image from previous activity and run the sudo docker compose build and up again. You now have setup a https nginx with basic hardening configuration.
+We copy the public key and private key into the container and change the file permissions to be more restrictive. Remove the old Docker image from the previous activity, then run `sudo docker compose build` and `up` again. You now have a HTTPS Nginx setup with basic hardening configuration.
