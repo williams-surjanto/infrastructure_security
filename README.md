@@ -21,4 +21,5 @@ I will try to cover every topic relating to this field, but for now my focus is 
 - [x] Add detail on how to attach to a running Docker container — vulnerability analysis
 - [x] Make lab writeup for CVE-2021-43798 — exploitation
 - [x] Extend intro material to Dockerfile and docker-compose.yml
-- [ ] Create intro material for Docker networking
+- [x] Create intro material for Docker networking
+- []  Add new material for CVE-2018-1000861
