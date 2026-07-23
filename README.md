@@ -22,4 +22,5 @@ I will try to cover every topic relating to this field, but for now my focus is 
 - [x] Make lab writeup for CVE-2021-43798 — exploitation
 - [x] Extend intro material to Dockerfile and docker-compose.yml
 - [x] Create intro material for Docker networking
+- [X] Add new material to hardening phpmyadmin misconfiguration
 - []  Add new material for CVE-2018-1000861

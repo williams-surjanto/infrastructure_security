@@ -361,3 +361,5 @@ Let's visualize what we just built. We now have **two separate bridge networks**
 ```
 
 So `linux-host` is now **dual-homed**: it has one interface (`eth0`) on `docker0` and another (`eth1`) on `home-lab-01`, exactly as the `ifconfig` output above showed. Because it has a leg in each subnet, it can talk to `nginx-host` on one side *and* `linux-orphan` on the other. Neither of those two can reach across to each other, though — the isolation between the bridges still holds. This is the same trick a real network uses: a host with interfaces in two subnets sits on the boundary between them, and it is exactly this property (a machine bridging two otherwise-isolated segments) that matters when we start thinking about **network segmentation and lateral movement** later on.
+
+I think that's all for now, I will cover the rest of network in another tutorial lab. 

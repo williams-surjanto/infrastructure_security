@@ -1,0 +1,18 @@
+services:
+  db:
+    image: mariadb:lts-ubi10
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysqlpassword
+    secrets:
+      - mysqlpassword
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      PMA_ARBITRARY: 0
+    ports:
+      - "8080:80"
+
+secrets:
+  mysqlpassword:
+    external: true
